@@ -1,0 +1,301 @@
+import pandas as pa            # importing the package
+import numpy as np            # import numpy
+import matplotlib.pyplot as ply # importing the pyplot from matplotlib
+from sklearn.linear_model import LinearRegression
+
+
+df = pa.read_csv("Fytlyff_DS_Interview.csv")  # read the data 
+
+ds = df.copy()        # copying the same data in new frame
+# changing columns name
+ds.rename(columns = {"Year":"Year","Month":"Month", "MobileWeb_or_Web":"Mobile_or_web", "Type_of_Customers?":'Type_of_Customers', "Where_Are_They_comming_from?": "Comming_from_Where", "Which_Place_in_India?":"Place_in_India", "How_many_Landed_on_our_Page?":"Landed_on_Page", "How_many_Landed_on_the_our_Page_and_clicked_on_a_button?":"Page_ClickButton", "How_many_Landed_on_the_our_Page_and_clicked_on_a_button_and_started_filling_the_Form?":"Page_ClickButton_StartFilling", "How_many_Landed_on_the_our_Page_and_clicked_on_a_button_and_started_filling_the_Form_and_Completed_and_submited_the_form?":"Page_ClickButton_StartFilling_Submited"},inplace = True) 
+
+#  function for Data Cleaning
+def data_cleaning(): 
+    ds.fillna({"Landed_on_Page":0,
+               "Page_ClickButton":0
+               }, inplace = True)       # replaces NAN with 0s
+    
+    # To avoide Cannot compare types 'ndarray(dtype=int64)' and 'str'error
+    ds["Month"] = ds["Month"].astype("str")
+    ds["Comming_from_Where"]=ds["Comming_from_Where"].astype('str')
+    
+    # replacing months with numbers 
+    ds["Month"] = ds["Month"].replace(["Jan","Feb","Mar","Apr","May","Jun",'Jul',"Aug","Sep","Oct","Nov","Dec"],[1,2,3,4,5,6,7,8,9,10,11,12])
+    # replaceing the Google an Direct traffic
+    ds["Comming_from_Where"] = ds["Comming_from_Where"].replace(["Came_From_Google","Landed_on_the_page_Directly"],["Google","Direct_traffic"])
+    
+    return ds  # returns the ds
+
+
+# function for descriptive
+
+def descriptive_stats():
+    # find std,quartile,mean,median for how many Landed on our page
+    
+    ds.sort_values(by=["Landed_on_Page"],axis=0, ascending=True, inplace = True) # sort the column in ascending
+    mean_Landed_on_Page = round(ds["Landed_on_Page"].mean(),2)    # find the mean
+    median_Landed_on_Page = round(ds["Landed_on_Page"].median(),2)      # find the median 
+    std_Landed_on_Page = round(ds["Landed_on_Page"].std(),2)             # find standerd diviation
+    quartile_Landed_on_Page = ds["Landed_on_Page"].quantile(q=0.25)     # find quartile
+    
+    
+    
+    #finding std,quartile,mean,median for how many landed on page and clicked button
+    
+    ds.sort_values(by=["Page_ClickButton"],axis=0, ascending=True, inplace = True) # sort the column in ascending
+    mean_Page_ClickButton = round(ds["Page_ClickButton"].mean(),2)    # find the mean
+    median_Page_ClickButton = round(ds["Page_ClickButton"].median(),2)      # find the median 
+    std_Page_ClickButton = round(ds["Page_ClickButton"].std(),2)             # find standerd diviation
+    quartile_Page_ClickButton = ds["Page_ClickButton"].quantile(q=0.25)     # find quartile
+    
+    
+    #finding std,quartile,mean,median for how many landed on page and clicked button and started filling the form
+    
+    ds.sort_values(by=["Page_ClickButton_StartFilling"],axis=0, ascending=True, inplace = True) # sort the column in ascending
+    mean_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].mean(),2)    # find the mean
+    median_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].median(),2)      # find the median 
+    std_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].std(),2)             # find standerd diviation
+    quartile_Page_ClickButton_StartFilling = ds["Page_ClickButton_StartFilling"].quantile(q=0.25)     # find quartile
+    
+    
+    #finding std,quartile,mean,median for how many landed on page and clicked buttonan started filling the form and submited
+    
+    ds.sort_values(by=["Page_ClickButton_StartFilling_Submited"],axis=0, ascending=True, inplace = True) # sort the column in ascending
+    mean_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].mean(),2)    # find the mean
+    median_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].median(),2)      # find the median 
+    std_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].std(),2)             # find standerd diviation
+    quartile_Page_ClickButton_StartFilling_Submited = ds["Page_ClickButton_StartFilling_Submited"].quantile(q=0.25)     # find quartile
+    
+    # creating new dataframe for the numerical values
+    
+    summary_Statistics = pa.DataFrame(data={"Landed_on_our_Page?":[mean_Landed_on_Page,median_Landed_on_Page,std_Landed_on_Page,quartile_Landed_on_Page],
+                                           "Landed_on_Page_and_clicked_button?":[mean_Page_ClickButton,median_Page_ClickButton,std_Page_ClickButton,quartile_Page_ClickButton],
+                                           "Landed_on_Page_clicked_button_filling_Form?":[mean_Page_ClickButton_StartFilling,median_Page_ClickButton_StartFilling,std_Page_ClickButton_StartFilling,quartile_Page_ClickButton_StartFilling],
+                                           "Landed_on_Page_clicked_button_filling_Form_submited_form?":[mean_Page_ClickButton_StartFilling_Submited,median_Page_ClickButton_StartFilling_Submited,std_Page_ClickButton_StartFilling_Submited,quartile_Page_ClickButton_StartFilling_Submited]},
+                                     index = ["Mean","Median","Standerd_diviation", "Quartile"])
+    pa.set_option("display.max_rows", None, "display.max_columns", None) # displace all row and column in the dataframe
+    
+    
+    # finding the unique values and data types
+    
+    Mobile_or_web = pa.unique(ds[["Mobile_or_web"]].values.ravel())   # find the unique values in Mobil_or_web
+    Customer = pa.unique(ds[["Type_of_Customers"]].values.ravel())    # find the unique values in Customer
+    Comming_from_where = pa.unique(ds[["Comming_from_Where"]].values.ravel())   # find the unique values in Customer from where
+    Places_in_India = pa.unique(ds[["Place_in_India"]].values.ravel())   # find the unique values in Place in india
+    
+    unique_values = [Mobile_or_web,Customer,Comming_from_where,Places_in_India] # list of unique values and dtype
+    
+    print(unique_values)
+    
+    return summary_Statistics
+
+    
+    
+
+# Which place in India has how many landed in Page
+
+heighest_place = ds[["Place_in_India"]][ds["Landed_on_Page"]==ds["Landed_on_Page"].max()]  # “Which_Place_in_India?”  has the highest “How_many_Landed_on_the_our_Page?”
+
+
+heighest_landed = ds[["Landed_on_Page"]][ds["Landed_on_Page"]==ds["Landed_on_Page"].max()]
+
+howmany_submited = ds["Page_ClickButton_StartFilling_Submited"].div(11274131.0).round(2) #  “How_many_Landed_on_the_our_Page_and_clicked_on_a_button_and_started_filling_the_Form_and_Completed_and_submited_the_form?” divided by “How_many_Landed_on _our_Page?” is highest for “Which_Place_in_India?”  
+
+
+
+# geting only year,month and total form submited 
+
+da = pa.DataFrame(data={"Year":ds.Year,
+                       "Month":ds.Month,
+                       "TotalSubmition":ds.Page_ClickButton_StartFilling_Submited})
+
+dg = da.groupby(da.Year)
+year_19 = dg.get_group(2019) # geting 2019 data int separate dataframe
+
+# for  months
+dik_19 = {}
+for i in range(1,13):
+    dk = year_19.groupby(year_19.Month)
+    dik_19[i] = dk.get_group(i)
+
+Jan=dik_19[1],Feb=dik_19[2],Mar=dik_19[3],Apr=dik_19[4],May=dik_19[5],Jun=dik_19[6],Jul=dik_19[7],Agu=dik_19[8],Sep=dik_19[9],Oct=dik_19[10],Nov=dik_19[11],Dec=dik_19[12]
+# creating dataframe for 2019 by adding the total monthly sunmition of filled forms
+
+
+year19 = pa.DataFrame(data={"Year":[2019,2019,2019,2019,2019,2019,2019,2019,2019,2019,2019,2019],
+                            "Month":[1,2,3,4,5,6,7,8,9,10,11,12],
+                           "TotalSubmitions":[Jan.TotalSubmition.sum(axis=0),
+                                             Feb.TotalSubmition.sum(axis=0),
+                                             Mar.TotalSubmition.sum(axis=0),
+                                             Apr.TotalSubmition.sum(axis=0),
+                                             May.TotalSubmition.sum(axis=0),
+                                             Jun.TotalSubmition.sum(axis=0),
+                                             Jul.TotalSubmition.sum(axis=0),
+                                             Agu.TotalSubmition.sum(axis=0),
+                                             Sep.TotalSubmition.sum(axis=0),
+                                             Oct.TotalSubmition.sum(axis=0),
+                                             Nov.TotalSubmition.sum(axis=0),
+                                             Dec.TotalSubmition.sum(axis=0)]})
+
+total_19 = year19.TotalSubmitions.sum(axis=0) # total forms submitted in year 2019
+
+dg = da.groupby(da.Year)
+year_20 = dg.get_group(2020) # geting 2020 data int separate dataframe
+
+# for  months
+dik = {}
+for i in range(1,13):
+    dg = year_20.groupby(year_20.Month)
+    dik[i] = dg.get_group(i)
+
+Jan=dik[1],Feb=dik[2],Mar=dik[3],Apr=dik[4],May=dik[5],Jun=dik[6],Jul=dik[7],Agu=dik[8],Sep=dik[9],Oct=dik[10],Nov=dik[11],Dec=dik[12]
+# creating dataframe for 2020 by ading the total monthly sunmition of filled forms
+
+
+year20 = pa.DataFrame(data={"Year":[2020,2020,2020,2020,2020,2020,2020,2020,2020,2020,2020,2020],
+                            "Month":[1,2,3,4,5,6,7,8,9,10,11,12],
+                           "TotalSubmitions":[Jan.TotalSubmition.sum(axis=0),
+                                             Feb.TotalSubmition.sum(axis=0),
+                                             Mar.TotalSubmition.sum(axis=0),
+                                             Apr.TotalSubmition.sum(axis=0),
+                                             May.TotalSubmition.sum(axis=0),
+                                             Jun.TotalSubmition.sum(axis=0),
+                                             Jul.TotalSubmition.sum(axis=0),
+                                             Agu.TotalSubmition.sum(axis=0),
+                                             Sep.TotalSubmition.sum(axis=0),
+                                             Oct.TotalSubmition.sum(axis=0),
+                                             Nov.TotalSubmition.sum(axis=0),
+                                             Dec.TotalSubmition.sum(axis=0)]})
+
+total_20 = year20.TotalSubmitions.sum(axis=0) # total forms submitted in year 2020
+
+
+
+dg = da.groupby(da.Year)
+year_21 = dg.get_group(2021) # geting 2021 data int separate dataframe
+
+# for  months
+dik = {}
+for i in range(1,13):
+    de = year_21.groupby(year_21.Month)
+    dik[i] = de.get_group(i)
+
+Jan=dik[1],Feb=dik[2],Mar=dik[3],Apr=dik[4],May=dik[5],Jun=dik[6],Jul=dik[7],Agu=dik[8],Sep=dik[9],Oct=dik[10],Nov=dik[11],Dec=dik[12]
+# creating dataframe for 2021 by ading the total monthly sunmition of filled forms
+
+
+year21 = pa.DataFrame(data={"Year":[2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021,2021],
+                            "Month":[1,2,3,4,5,6,7,8,9,10,11,12],
+                           "TotalSubmitions":[Jan.TotalSubmition.sum(axis=0),
+                                             Feb.TotalSubmition.sum(axis=0),
+                                             Mar.TotalSubmition.sum(axis=0),
+                                             Apr.TotalSubmition.sum(axis=0),
+                                             May.TotalSubmition.sum(axis=0),
+                                             Jun.TotalSubmition.sum(axis=0),
+                                             Jul.TotalSubmition.sum(axis=0),
+                                             Agu.TotalSubmition.sum(axis=0),
+                                             Sep.TotalSubmition.sum(axis=0),
+                                             Oct.TotalSubmition.sum(axis=0),
+                                             Nov.TotalSubmition.sum(axis=0),
+                                             Dec.TotalSubmition.sum(axis=0)]})
+
+total_21 = year21.TotalSubmitions.sum(axis=0) # total forms submitted in year 2021
+
+# concat the simplified data's
+Three_years = pa.concat([year19,year20,year21])
+# total forms submitted in years
+Total_Submition_Year = pa.DataFrame(data={"Year":[2019,2020,2021],
+                                         "Total_Form_Submited":[total_19,total_20,total_21]})
+
+
+# simple Machine learing 
+
+from sklearn.linear_model import LinearRegression # importing the linearRegression to trine the system
+import numpy as np
+
+def pred_future():
+    reg = LinearRegression()
+
+    mod = reg.fit(Total_Submition_Year[["Year"]],Total_Submition_Year.Total_Form_Submited) # fiting the previous  year data
+    mod.predict([[2020]]) # preiction values
+    print(mod.predict([[2022]])) # preiction values for 2022
+
+    mape = np.mean(np.abs((43760965-int(mod.predict([[2020]])))/43760965))*100  # MAPE(Mean Absalute Persentage Error Formula)
+    return mape
+
+
+# Visualization
+
+
+
+re = LinearRegression()
+mo = re.fit(Three_years[["Year","Month"]],Three_years.TotalSubmitions)  # trining the system
+ye = [],mont = [],pe = []
+for i in range(1,13):
+    month = int(input("Enter Month in number: ")) # gets input from user month
+    year = int(input("Enter Year: "))
+    pred = mo.predict([[year,month]])
+    ye.append(int(year))
+    mont.append(int(month))
+    pe.append(int(pred))
+
+gra_pre = pa.DataFrame(data={"Month":mont,"Predict_Total_submition":pe})
+pretemp = gra_pre
+pre2022 = gra_pre
+
+
+
+
+
+# different between prediction and actual values
+
+import matplotlib.pyplot as ply
+
+ply.plot(year21["Month"],pre2022["Predict_Total_submition"]) # line for months and prediction
+ply.plot(year21["Month"],year21["TotalSubmitions"]) # line for months and actual
+ply.title("Differents")      # Graph title
+ply.xlabel("Month")         # x-axis name
+ply.ylabel("Year's")        # y-axis name
+ply.legend(["this_pre","this_2021"])     # identification of line
+ply.show()
+ply.plot(year21["TotalSubmitions"],pre2022["Predict_Total_submition"])    
+ply.title("Prediction Graph")
+ply.xlabel("Year_2021")
+ply.ylabel("Year_2022")
+    
+button = ds.loc[0:1439] # geting data only for 2019 and 2022
+    
+# new dataframe to plot graph for how many click button
+button_frame = pa.DataFrame(data={"Year":button.Year,
+                                 "Month":button.Month,
+                                 "Place_in_India":button.Place_in_India,
+                                 "Page_ClickButton":button.Page_ClickButton})
+dick = {}
+for i in ['Dehradun', 'Bangalore', 'Chennai', 'Pune', 'Indore']:
+    dg = button_frame.groupby(button_frame.Place_in_India)
+    dick[i] = dg.get_group(i)
+Dehradun,Bangalore,Chennai,Pune,Indore = dick['Dehradun'],dick['Bangalore'],dick['Chennai'],dick['Pune'],dick['Indore']
+
+
+# ploting the lines for places and how many clicke button in year 2019,2020 months
+ply.plot(Dehraun.Month,Dehraun.Page_ClickButton,'r')
+ply.plot(Bangalore.Month,Bangalore.Page_ClickButton,'y')
+ply.plot(Chennai.Month,Chennai.Page_ClickButton,'b')
+ply.plot(Pune.Month,Pune.Page_ClickButton,'k')
+ply.plot(Indore.Month,Indore.Page_ClickButton,'g')
+ply.legend(['Dehradun', 'Bangalore', 'Chennai', 'Pune', 'Indore'])   # identification of line
+ply.title("Button_Clicked_Places")
+ply.xlabel("Months_2019_2020")
+ply.ylabel("Clicked_Button_count")
+ply.show()
+    
+   
+ 
+
+    
+data_cleaning()
+descriptive_stats()
+print(heighest_place,"Has Heighest How_many_Landed_on_the_our_Page")
+print(howmany_submited)
+pred_future()
