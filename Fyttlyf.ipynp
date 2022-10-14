@@ -31,49 +31,24 @@ def data_cleaning():
 # function for descriptive
 
 def descriptive_stats():
-    # find std,quartile,mean,median for how many Landed on our page
+    dic = {}
+    for i in ["Landed_on_Page","Page_ClickButton","Page_ClickButton_StartFilling","Page_ClickButton_StartFilling_Submited"]:
+        ds.sort_values(by=[i],axis=0, ascending=True, inplace = True)      # sort the column in ascending
+        descriptives = {"Mean" : round(ds[i].mean(),2),           # find the mean
+                        "Median" : round(ds[i].median(),2),     # find the median 
+                        "Standers_diviation" : round(ds[i].std(),2),      # find standerd diviation
+                        "Quartile" : ds[i].quantile(q=0.25)     # find quartile
+                        }
+        dic[i] = descriptives
+   
+    # Creating the dataframe for the mean,median,quartile and std
     
-    ds.sort_values(by=["Landed_on_Page"],axis=0, ascending=True, inplace = True) # sort the column in ascending
-    mean_Landed_on_Page = round(ds["Landed_on_Page"].mean(),2)    # find the mean
-    median_Landed_on_Page = round(ds["Landed_on_Page"].median(),2)      # find the median 
-    std_Landed_on_Page = round(ds["Landed_on_Page"].std(),2)             # find standerd diviation
-    quartile_Landed_on_Page = ds["Landed_on_Page"].quantile(q=0.25)     # find quartile
-    
-    
-    
-    #finding std,quartile,mean,median for how many landed on page and clicked button
-    
-    ds.sort_values(by=["Page_ClickButton"],axis=0, ascending=True, inplace = True) # sort the column in ascending
-    mean_Page_ClickButton = round(ds["Page_ClickButton"].mean(),2)    # find the mean
-    median_Page_ClickButton = round(ds["Page_ClickButton"].median(),2)      # find the median 
-    std_Page_ClickButton = round(ds["Page_ClickButton"].std(),2)             # find standerd diviation
-    quartile_Page_ClickButton = ds["Page_ClickButton"].quantile(q=0.25)     # find quartile
-    
-    
-    #finding std,quartile,mean,median for how many landed on page and clicked button and started filling the form
-    
-    ds.sort_values(by=["Page_ClickButton_StartFilling"],axis=0, ascending=True, inplace = True) # sort the column in ascending
-    mean_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].mean(),2)    # find the mean
-    median_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].median(),2)      # find the median 
-    std_Page_ClickButton_StartFilling = round(ds["Page_ClickButton_StartFilling"].std(),2)             # find standerd diviation
-    quartile_Page_ClickButton_StartFilling = ds["Page_ClickButton_StartFilling"].quantile(q=0.25)     # find quartile
-    
-    
-    #finding std,quartile,mean,median for how many landed on page and clicked buttonan started filling the form and submited
-    
-    ds.sort_values(by=["Page_ClickButton_StartFilling_Submited"],axis=0, ascending=True, inplace = True) # sort the column in ascending
-    mean_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].mean(),2)    # find the mean
-    median_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].median(),2)      # find the median 
-    std_Page_ClickButton_StartFilling_Submited = round(ds["Page_ClickButton_StartFilling_Submited"].std(),2)             # find standerd diviation
-    quartile_Page_ClickButton_StartFilling_Submited = ds["Page_ClickButton_StartFilling_Submited"].quantile(q=0.25)     # find quartile
-    
-    # creating new dataframe for the numerical values
-    
-    summary_Statistics = pa.DataFrame(data={"Landed_on_our_Page?":[mean_Landed_on_Page,median_Landed_on_Page,std_Landed_on_Page,quartile_Landed_on_Page],
-                                           "Landed_on_Page_and_clicked_button?":[mean_Page_ClickButton,median_Page_ClickButton,std_Page_ClickButton,quartile_Page_ClickButton],
-                                           "Landed_on_Page_clicked_button_filling_Form?":[mean_Page_ClickButton_StartFilling,median_Page_ClickButton_StartFilling,std_Page_ClickButton_StartFilling,quartile_Page_ClickButton_StartFilling],
-                                           "Landed_on_Page_clicked_button_filling_Form_submited_form?":[mean_Page_ClickButton_StartFilling_Submited,median_Page_ClickButton_StartFilling_Submited,std_Page_ClickButton_StartFilling_Submited,quartile_Page_ClickButton_StartFilling_Submited]},
-                                     index = ["Mean","Median","Standerd_diviation", "Quartile"])
+    summary_Statistics = pa.DataFrame(data={"Landed_on_our_Page?" : [dic["Landed_on_Page"]["Mean"],dic["Landed_on_Page"]["Median"],dic["Landed_on_Page"]["Standers_diviation"],dic["Landed_on_Page"]["Quartile"]],
+                                           "Landed_on_Page_and_clicked_button?" : [dic["Page_ClickButton"]["Mean"],dic["Page_ClickButton"]["Median"],dic["Page_ClickButton"]["Standers_diviation"],dic["Page_ClickButton"]["Quartile"]],
+                                           "Landed_on_Page_clicked_button_filling_Form?" : [dic["Page_ClickButton_StartFilling"]["Mean"],dic["Page_ClickButton_StartFilling"]["Median"],dic["Page_ClickButton_StartFilling"]["Standers_diviation"],dic["Page_ClickButton_StartFilling"]["Quartile"]],
+                                           "Landed_on_Page_clicked_button_filling_Form_submited_form?" : [dic["Page_ClickButton_StartFilling_Submited"]["Mean"],dic["Page_ClickButton_StartFilling_Submited"]["Median"],dic["Page_ClickButton_StartFilling_Submited"]["Standers_diviation"],dic["Page_ClickButton_StartFilling_Submited"]["Quartile"]]
+                                           },index = ["Mean","Median","Standerd_diviation", "Quartile"] 
+                                     )
     pa.set_option("display.max_rows", None, "display.max_columns", None) # displace all row and column in the dataframe
     
     
